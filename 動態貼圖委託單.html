@@ -1,0 +1,352 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>動態貼圖委託單</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* 版面：單欄表單，分段卡片 → 動態格狀勾選 → 底部摘要可複製 */
+:root{
+  --bg:#f3f6f5; --surface:#ffffff; --ink:#22302d; --muted:#62736f;
+  --line:#d6e0dd; --accent:#4b8f7c; --accent-soft:#e1efea; --pop:#b2558a;
+  --display:"Huninn","Noto Sans TC",system-ui,sans-serif;
+  --body:"Noto Sans TC",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141b1a;--surface:#1c2523;--ink:#e6efec;--muted:#93a6a1;--line:#2e3b38;
+  --accent:#7cc4ad;--accent-soft:#22362f;--pop:#e08bbb;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141b1a;--surface:#1c2523;--ink:#e6efec;--muted:#93a6a1;--line:#2e3b38;
+  --accent:#7cc4ad;--accent-soft:#22362f;--pop:#e08bbb;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:15px/1.7 var(--body)}
+.wrap{max-width:720px;margin:0 auto;padding-block:32px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:grid;gap:20px}
+header h1{font:28px/1.3 var(--display);margin:0;text-wrap:balance}
+header p{margin:6px 0 0;color:var(--muted)}
+section{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:16px}
+h2{font:19px/1.4 var(--display);margin:0;display:flex;gap:10px;align-items:baseline}
+h2 small{font:13px var(--body);color:var(--muted)}
+.field{display:grid;gap:6px;min-width:0}
+label.t{font-weight:500}
+.hint{font-size:13px;color:var(--muted)}
+.req{color:var(--pop)}
+input[type=text],input[type=url],textarea{
+  width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--bg);
+  border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:90px;resize:vertical}
+input:focus-visible,textarea:focus-visible,button:focus-visible,.chip input:focus-visible+span,.tpl input:focus-visible+.card{
+  outline:2px solid var(--accent);outline-offset:2px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0}
+.chip span{display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:999px;cursor:pointer;background:var(--bg)}
+.chip input:checked+span{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:500}
+.color{display:flex;gap:8px;align-items:center}
+.color input[type=color]{width:44px;height:40px;padding:0;border:1px solid var(--line);border-radius:10px;background:none;flex:none}
+.color input[type=text]{flex:1}
+.refsheet{border:1.5px dashed var(--line);border-radius:12px;padding:16px;text-align:center;color:var(--muted);font-size:13px}
+.tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.count{font:500 14px var(--body);font-variant-numeric:tabular-nums}
+.count b{color:var(--pop);font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.tpl{position:relative;cursor:pointer}
+.tpl input{position:absolute;opacity:0}
+.card{border:1px solid var(--line);border-radius:12px;padding:8px;display:grid;gap:6px;background:var(--bg);transition:border-color .15s}
+.thumb{aspect-ratio:1;max-width:100%;border-radius:8px;background:var(--accent-soft);display:grid;place-items:center;
+  font:22px var(--display);color:var(--accent)}
+.thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.name{font-size:13px;line-height:1.4;display:flex;gap:6px}
+.name i{font:normal 12px var(--mono);color:var(--muted)}
+.tpl input:checked+.card{border-color:var(--pop);box-shadow:0 0 0 1px var(--pop)}
+.tpl input:checked+.card .thumb::after{content:"✓";position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;
+  background:var(--pop);color:var(--surface);font:700 13px/22px var(--body);text-align:center}
+.picked{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;padding:12px;display:grid;gap:10px}
+#pickedList{max-height:132px;overflow:auto}
+.tag{display:inline-flex;gap:6px;align-items:center;padding:4px 6px 4px 10px;border-radius:999px;background:var(--accent-soft);font-size:13px}
+.tag i{font:normal 11px var(--mono);color:var(--muted)}
+.tag button{padding:0 6px;border:0;background:none;color:var(--muted);font-size:15px;line-height:1}
+.groups{display:grid;gap:10px}
+details{border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+summary{cursor:pointer;padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸";color:var(--muted);transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+summary b{font:17px var(--display)}
+summary .n{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+summary .sel{color:var(--pop);font-size:13px;font-weight:500}
+summary a{margin-left:auto;font-size:13px;color:var(--accent)}
+.items{display:flex;flex-wrap:wrap;gap:8px;padding:0 14px 14px}
+.items .chip span{font-size:14px;padding:6px 12px;background:var(--surface)}
+.items .chip input:checked+span{background:var(--pop);border-color:var(--pop);color:var(--surface)}
+.items .chip input:disabled+span{opacity:.4;cursor:not-allowed}
+.empty{padding:12px;color:var(--muted);font-size:14px}
+button{font:inherit;cursor:pointer;border-radius:10px;padding:9px 16px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:700}
+.out{background:var(--accent-soft);border-color:var(--accent)}
+pre{margin:0;white-space:pre-wrap;word-break:break-word;font:13px/1.7 var(--mono);background:var(--surface);
+  border:1px solid var(--line);border-radius:10px;padding:14px;max-height:420px;overflow:auto}
+.err{color:var(--pop);font-size:14px}
+#over{color:var(--pop);margin-left:8px}
+.notice a{color:var(--accent);white-space:nowrap}
+.agree{display:grid;gap:10px}
+.agree label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;line-height:1.6}
+.agree input{width:18px;height:18px;margin-top:3px;flex:none;accent-color:var(--accent)}
+#overFee,#fmtFee{color:var(--pop)}
+.notice{margin:0;padding:10px 14px;border-radius:10px;background:var(--accent-soft);font-size:14px}
+label small.hint{font-weight:400}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>動態貼圖委託單</h1>
+    <p>填完後按「產生委託摘要」，複製整段貼給我就完成囉。標 <span class="req">*</span> 為必填。</p>
+  </header>
+
+  <form id="f" novalidate>
+  <div style="display:grid;gap:20px">
+
+    <section>
+      <h2>聯絡資訊</h2>
+      <div class="row">
+        <div class="field"><label class="t" for="nick">暱稱 <span class="req">*</span></label>
+          <input type="text" id="nick" placeholder="例：小雨"></div>
+        <div class="field"><label class="t" for="contact">聯絡方式 <span class="req">*</span></label>
+          <input type="text" id="contact" placeholder="Threads 帳號，例：@lumi_draws"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>輸出規格</h2>
+      <div class="field"><span class="t" style="font-weight:500">畫面範圍 <span class="req">*</span></span>
+        <span class="hint">擇一。</span>
+        <div class="seg" id="crop"></div></div>
+      <div class="field"><label class="t" for="size">需求尺寸</label>
+        <input type="text" id="size" placeholder="例：500×500 px"></div>
+      <div class="field"><span class="t" style="font-weight:500">檔案格式</span>
+        <span class="hint">含一種格式，每多選一種 +50 元。</span>
+        <div class="seg" id="fmt"></div>
+        <span class="hint" id="fmtFee" hidden></span></div>
+    </section>
+
+    <section>
+      <h2>角色資料</h2>
+      <div class="field"><label class="t" for="cname">角色名稱</label>
+        <input type="text" id="cname" placeholder="例：露米"></div>
+
+      <div class="field"><label class="t" for="refs">角色參考圖 <span class="req">*</span></label>
+        <span class="hint">請附上角色圖的連結，有三視圖更好。</span>
+        <textarea id="refs" placeholder="一行一個連結（雲端硬碟、Twitter、Pixiv 等）"></textarea>
+        <span class="hint">請確認連結權限是「知道連結的人都能查看」。</span></div>
+
+      <div class="field"><label class="t" for="desc">詳細設定</label>
+        <span class="hint">如有詳細設定，可以在這裡用文字說明。有沒有衣服設定，或希望參考的服裝，也請一併寫上。</span>
+        <textarea id="desc" placeholder="例：瀏海分邊在左、右眼下有淚痣、髮飾只在右側。衣服：白色連帽外套（或附上想參考的服裝圖連結）"></textarea></div>
+
+      <div class="row">
+        <div class="field"><label class="t" for="hairT">頭髮主色 <small class="hint">（可給色號）</small></label>
+          <div class="color"><input type="color" id="hairC" value="#c98f6a" aria-label="選擇頭髮主色"><input type="text" id="hairT" placeholder="例：#C98F6A 或 奶茶色"></div>
+          <label class="chip"><input type="checkbox" id="grad"><span>有髮尾漸層</span></label></div>
+        <div class="field" id="gradBox" hidden><label class="t" for="hair2T">髮尾漸層色 <small class="hint">（可給色號）</small></label>
+          <div class="color"><input type="color" id="hair2C" value="#e7a3c4" aria-label="選擇髮尾漸層色"><input type="text" id="hair2T" placeholder="例：#E7A3C4，髮尾 1/3 漸層"></div></div>
+        <div class="field"><label class="t" for="eyeT">瞳色 <small class="hint">（可給色號）</small></label>
+          <div class="color"><input type="color" id="eyeC" value="#5a7fc2" aria-label="選擇瞳色"><input type="text" id="eyeT" placeholder="例：#5A7FC2 或 藍紫異色瞳"></div></div>
+        <div class="field"><label class="t" for="skinT">膚色 <small class="hint">（可給色號）</small></label>
+          <div class="color"><input type="color" id="skinC" value="#f6dccb" aria-label="選擇膚色"><input type="text" id="skinT" placeholder="例：#F6DCCB，可不填"></div></div>
+      </div>
+      <span class="hint">有參考圖的話以參考圖為準，顏色欄位用來補充或指定修改。</span>
+    </section>
+
+    <section>
+      <h2>部件確認</h2>
+      <span class="hint">角色我都會拆分，這裡只是確認有沒有遺漏。請勾選角色身上有的部件。</span>
+      <div class="seg" id="parts"></div>
+      <div class="field"><label class="t" for="partsOther">上面沒列到的部件</label>
+        <input type="text" id="partsOther" placeholder="例：左耳有三個耳環、髮飾在右邊"></div>
+    </section>
+
+    <section>
+      <h2>選擇動態 <small>從 V1.0–V1.8 挑選，含 25 款，可超選</small></h2>
+      <p class="notice">超過 25 款以每 5 款為一組加價：不需加繪 +30 元，需加繪 +80 元。有些動態會用到角色以外的圖（例如手、道具），是否需要加繪由我看過後確認報價。</p>
+      <span class="hint">每個版本旁的「看動圖」會開啟 EmoteLab 的預覽頁，可以先看效果再回來勾選。</span>
+      <div class="field"><label class="t" for="q">搜尋動態</label>
+        <input type="text" id="q" placeholder="例：吃、哭、跳舞、一切都好"></div>
+      <div class="picked">
+        <div class="tools">
+          <span class="count">已選 <b id="cnt">0</b> / 25 款<span id="over"></span></span>
+          <button type="button" id="none">全部清除</button>
+        </div>
+        <span class="hint" id="overFee" hidden></span>
+        <div class="seg" id="pickedList"><span class="hint">還沒選，點下方的動態名稱就會加入。</span></div>
+      </div>
+      <div id="tpls" class="groups"></div>
+    </section>
+
+    <section>
+      <h2>其他</h2>
+      <p class="notice">工期約一週。製作中會跟你確認細節，若沒有及時回覆，交稿時間可能會延長。</p>
+      <div class="field"><label class="t" for="note">備註</label>
+        <textarea id="note" placeholder="不希望出現的元素、其他想說的話"></textarea></div>
+    </section>
+
+    <section>
+      <h2>確認事項 <small>全部勾選後才能送出</small></h2>
+      <p class="notice">本委託使用 EmoteLab 及其內建素材製作。私聊或非正式分享時不需要署名；但在公開、商業或專業場合使用，且觀眾或客戶可能以為角色美術或動畫是你獨立創作時，請清楚註明使用 EmoteLab 製作。<a href="https://emotelab.app/zh-Hans/assets/usage-guide" target="_blank" rel="noopener">EmoteLab 使用指南 ↗</a></p>
+      <div class="agree">
+        <label><input type="checkbox" name="agree" id="agree-0" value="已閱讀委託須知與交易注意事項"><span>我已閱讀委託須知與交易注意事項 <span class="req">*</span></span></label>
+        <label><input type="checkbox" name="agree" id="agree-1" value="知道不可聲稱全部為個人製作"><span>我知道成品使用 EmoteLab 素材製作，不可聲稱全部為個人獨立製作 <span class="req">*</span></span></label>
+        <label><input type="checkbox" name="agree" id="agree-2" value="公開展示時會註明使用 EmoteLab 製作"><span>在公開、商業或專業場合展示使用時，我會註明使用 EmoteLab 製作 <span class="req">*</span></span></label>
+      </div>
+    </section>
+
+    <div class="tools">
+      <span class="err" id="err" role="alert"></span>
+      <button type="submit" class="primary">產生委託摘要</button>
+    </div>
+
+    <section class="out" id="outBox" hidden>
+      <div class="tools"><h2>委託摘要</h2><button type="button" id="copy">複製</button></div>
+      <pre id="out" tabindex="0"></pre>
+      <span class="hint" id="copyMsg">複製後貼到私訊或委託留言即可。</span>
+    </section>
+
+  </div>
+  </form>
+</div>
+
+<script>
+// EmoteLab CoffeeBean 動態清單（V1.0–V1.8）。新增版本時在這裡加一行。
+const VERSIONS = [["1.0", ["通知/提示 Bits", "通知/提示 硬幣", "通知/提示 愛心/喜歡", "通知/提示 點讚", "通知/提示 星星/收藏", "生氣", "到達（拿筷子）", "到達", "敲頭", "自我安慰", "撬棍 1", "撬棍 2", "撬棍 3", "哭 1", "哭 2", "哭 3", "死亡", "頭暈", "喝（飲料杯）", "駕駛", "饞（筷子）", "饞（刀叉）", "呆 1", "呆 2", "呆 3", "呆（貼紙） 1", "呆（貼紙） 2", "呆（貼紙） 3", "嘆號", "坐牢 1", "坐牢 2", "刀 1", "刀 2", "笑", "舔舔", "螢光棒 1", "螢光棒 2", "冒泡 1", "冒泡 2", "愛心 1", "愛心 2", "愛心 3", "錢", "靜音 1", "靜音 2", "緊張 1", "緊張 2", "記錄 1", "記錄 2", "摸頭", "指", "問號", "Raid 1", "Raid 2", "玫瑰", "得分（0分）", "得分（10分）", "害羞 1", "害羞 2", "睡覺（普通）", "睡覺（準備階段1）", "睡覺（準備階段2）", "睡覺（UU）", "期待", "驚嚇", "汗", "反向點讚", "點讚", "打字（生氣）", "打字（惱怒）", "打字（普通）", "工作（生氣）", "工作（小睡）", "工作（普通）", "工作（疲倦）"]], ["1.1", ["到達（拿勺子）", "紅包 1", "紅包 2"]], ["1.2", ["搖鈴", "蛋糕", "抓拍（手機）", "抓拍（攝像機）", "慶祝", "點頭", "搖頭", "催眠", "情書", "要米", "PNGTuber 閒置", "PNGTuber 閒置 2", "PNGTuber 說話", "PNGTuber 說話 2", "PNGTuber 說教", "Popcat 幀", "Popcat 平滑", "唱歌", "畫板", "雨刮器尾巴"]], ["1.3", ["Bug", "加油", "復活節", "主意", "擴音器", "帶薪拉屎（簡單模式）", "帶薪拉屎（困難模式）", "PNGTuber 加載中", "噴劑", "停止工作", "墨鏡反光", "像素墨鏡反光", "摘掉墨鏡", "拍蠅", "膠帶", "垃圾桶", "TrashTuber 閒置", "TrashTuber 說話", "TrashTuber 說教"]], ["1.4", ["乾杯", "跳舞（Caramelldansen）", "跳舞（Helltaker）", "跳舞（低皮質醇）", "跳舞 1", "吃（甜甜圈）", "吃（爆米花）", "吃（西瓜）", "打遊戲", "打招呼 1", "打招呼 2", "期待 2", "思考（自信地）", "思考（認真地）"]], ["1.5", ["通知/自定義", "按鈕", "刷卡", "搖可樂", "舞蹈（散味）", "禮物 1", "禮物 2", "魔法", "反轉", "害怕 1", "害怕 2", "六七", "六七（呆）", "拿走我的錢"]], ["1.6", ["奶酪糊臉", "小丑 1", "小丑 2", "電風扇 1", "電風扇 2", "燒 1", "燒 2", "摺扇", "被擊中（Bits）", "被擊中（硬幣）", "被擊中（自定義）", "被擊中（愛心）", "被擊中（拖鞋）", "吉他", "拖鞋 1", "拖鞋 2", "墨鏡循環", "一切都好 1", "一切都好 2", "一切都好 3", "眨眼"]], ["1.7", ["吐舌 1", "吐舌 2", "吐舌 3", "吐舌 4", "碰鼻子", "按鈕（拍擊）", "擠臉頰", "禮物 3", "加載（茶/咖啡杯）", "加載（馬克杯）", "加載（睡覺）", "摸頭 2", "按", "揉頭 1", "切（剪刀）", "茶 1", "茶 2", "茶 3", "一切都好 4", "一切都好 5", "一切都好 6", "勝利 1", "耶"]], ["1.8", ["眨眼 1", "飲料（能量飲料 1）", "飲料（能量飲料 2）", "補水", "舔（冰淇淋）", "舔（棒冰）", "音樂 1", "音樂 2", "音樂 3", "書呆子 1", "書呆子 2", "書呆子 3", "枕頭（舔）", "枕頭（蹭）", "枕頭（蹭 2）", "害羞 3", "期待 3", "停止", "擺動 1", "搖擺 2"]]];
+const LIMIT = 25;
+const ALL = VERSIONS.flatMap(([v,names],gi)=>names.map((n,i)=>({id:`${gi}-${i}`,v,name:n,order:gi*1000+i})));
+const PARTS = ["呆毛","獸耳","尾巴","髮飾","眼鏡","耳環","翅膀","角"];
+const FORMATS = ["GIF","APNG","WebP","WebM","Image Sequence"];
+
+const $ = id => document.getElementById(id);
+function chips(box, list, name, type){
+  box.innerHTML = list.map((t,i)=>`<label class="chip"><input type="${type}" name="${name}" id="${name}-${i}" value="${t}"><span>${t}</span></label>`).join("");
+}
+chips($("parts"), PARTS, "part", "checkbox");
+chips($("fmt"), FORMATS, "fmt", "checkbox");
+chips($("crop"), ["大頭","半身","全身"], "crop", "radio");
+const fmtExtra = () => Math.max(0, document.querySelectorAll("input[name=fmt]:checked").length - 1);
+$("fmt").addEventListener("change", () => { const n = fmtExtra(); $("fmtFee").hidden = !n; $("fmtFee").textContent = n ? `多選 ${n} 種格式：+${n*50} 元` : ""; });
+
+const linkFor = v => "https://emotelab.app/zh-Hans/assets/CoffeeBean/animations/v" + v.replace(".","-");
+$("tpls").innerHTML = VERSIONS.map(([v,names],gi)=>`
+  <details data-g="${gi}" ${gi===0?"open":""}>
+    <summary><b>V${v}</b><span class="n">${names.length} 款</span><span class="sel" id="gsel-${gi}"></span>
+      <a href="${linkFor(v)}" target="_blank" rel="noopener">看動圖 ↗</a></summary>
+    <div class="items">${names.map((n,i)=>`<label class="chip" data-name="${n}"><input type="checkbox" name="tpl" id="tpl-${gi}-${i}" value="${gi}-${i}"><span>${n}</span></label>`).join("")}</div>
+  </details>`).join("") + `<div class="empty" id="noHit" hidden>找不到符合的動態，換個關鍵字試試。</div>`;
+
+const picked = [];  // 依勾選順序
+const byId = Object.fromEntries(ALL.map(a=>[a.id,a]));
+const extra = () => { const n = Math.max(0, picked.length - LIMIT); return {n, groups: Math.ceil(n/5)}; };
+const tplBoxes = () => [...document.querySelectorAll('input[name=tpl]')];
+function refresh(){
+  $("cnt").textContent = picked.length;
+  const ex = extra();
+  $("over").textContent = ex.n ? `・超選 ${ex.n} 款` : "";
+  $("overFee").hidden = !ex.n;
+  $("overFee").textContent = ex.n ? `超選 ${ex.groups} 組：不需加繪 +${ex.groups*30} 元，需加繪 +${ex.groups*80} 元（實際由繪師確認）` : "";
+  $("pickedList").innerHTML = picked.length
+    ? picked.map(id=>`<span class="tag"><i>${byId[id].v}</i>${byId[id].name}<button type="button" data-rm="${id}" aria-label="移除 ${byId[id].name}">×</button></span>`).join("")
+    : '<span class="hint">還沒選，點下方的動態名稱就會加入。</span>';
+  VERSIONS.forEach((_,gi)=>{ const k = picked.filter(id=>id.startsWith(gi+"-")).length; $("gsel-"+gi).textContent = k ? `已選 ${k}` : ""; });
+}
+$("tpls").addEventListener("change", e=>{
+  const b = e.target; if(b.name!=="tpl") return;
+  if(b.checked) picked.push(b.value);
+  else picked.splice(picked.indexOf(b.value),1);
+  refresh();
+});
+$("pickedList").addEventListener("click", e=>{
+  const id = e.target.dataset.rm; if(!id) return;
+  $("tpl-"+id).checked = false; picked.splice(picked.indexOf(id),1); refresh();
+});
+$("none").onclick = () => { tplBoxes().forEach(b=>b.checked=false); picked.length=0; refresh(); };
+$("q").addEventListener("input", ()=>{
+  const q = $("q").value.trim(); let hits = 0;
+  document.querySelectorAll("#tpls details").forEach(d=>{
+    let n = 0;
+    d.querySelectorAll(".chip").forEach(c=>{ const ok = !q || c.dataset.name.includes(q); c.hidden = !ok; if(ok) n++; });
+    d.hidden = q && !n; if(q && n) d.open = true; hits += n;
+  });
+  $("noHit").hidden = hits > 0;
+});
+
+
+// 文字欄填了色號時，同步到色票
+[["hairT","hairC"],["hair2T","hair2C"],["eyeT","eyeC"],["skinT","skinC"]].forEach(([t,c])=>{
+  $(t).addEventListener("input",()=>{ const m=$(t).value.match(/#?([0-9a-f]{6})\b/i); if(m) $(c).value="#"+m[1].toLowerCase(); });
+});
+$("grad").addEventListener("change", () => { $("gradBox").hidden = !$("grad").checked; });
+const checked = n => [...document.querySelectorAll(`input[name=${n}]:checked`)].map(i=>i.value);
+const color = (c,t) => { const v=$(t).value.trim(); return v ? `${$(c).value.toUpperCase()}（${v}）` : "未指定"; };
+
+$("f").addEventListener("submit", e=>{
+  e.preventDefault();
+  const miss = [];
+  if(!$("nick").value.trim()) miss.push("暱稱");
+  if(!$("contact").value.trim()) miss.push("聯絡方式");
+  if(!$("refs").value.trim()) miss.push("角色參考圖");
+  if(!checked("crop").length) miss.push("畫面範圍");
+  const sel = picked.map(id=>byId[id]).sort((a,b)=>a.order-b.order);
+  if(!sel.length) miss.push("至少選一款動態");
+  const agreeN = checked("agree").length, agreeAll = document.querySelectorAll("input[name=agree]").length;
+  if(agreeN < agreeAll) miss.push(`確認事項還有 ${agreeAll - agreeN} 項未勾選`);
+  if(miss.length){ $("err").textContent = "還沒填：" + miss.join("、"); return; }
+  $("err").textContent = "";
+
+  const parts = checked("part"); const other = $("partsOther").value.trim();
+  const lines = [
+    "【動態貼圖委託】",
+    `暱稱：${$("nick").value.trim()}`,
+    `聯絡：${$("contact").value.trim()}`,
+    `角色：${$("cname").value.trim() || "未填"}`,
+    "",
+    "■ 輸出規格",
+    `畫面範圍：${checked("crop")[0] || "未選"}`,
+    `需求尺寸：${$("size").value.trim() || "未填"}`,
+    `檔案格式：${checked("fmt").join("、") || "未填"}${fmtExtra() ? `（多選 ${fmtExtra()} 種 +${fmtExtra()*50} 元）` : ""}`,
+    "",
+    "■ 角色設定",
+    "參考圖：\n" + $("refs").value.trim().split("\n").filter(Boolean).map(l=>"  - "+l.trim()).join("\n"),
+    $("desc").value.trim() ? "詳細設定：\n  " + $("desc").value.trim().replace(/\n/g,"\n  ") : null,
+    `頭髮主色：${color("hairC","hairT")}`,
+    $("grad").checked ? `髮尾漸層：${$("hair2C").value.toUpperCase()}${$("hair2T").value.trim() ? "（"+$("hair2T").value.trim()+"）" : ""}` : null,
+    `瞳色：${color("eyeC","eyeT")}`,
+    `膚色：${color("skinC","skinT")}`,
+    "",
+    "■ 部件確認",
+    parts.length ? parts.join("、") : "無勾選",
+    other ? "補充：" + other : null,
+    "",
+    `■ 選擇動態（${sel.length} 款）`,
+    sel.map((t,i)=>`${i+1}. ${t.v} ${t.name}`).join("\n"),
+    extra().n ? `超選 ${extra().n} 款（${extra().groups} 組）：不需加繪 +${extra().groups*30} 元／需加繪 +${extra().groups*80} 元，待繪師確認` : null,
+    "",
+    `備註：${$("note").value.trim() || "無"}`,
+    "",
+    "■ 確認事項",
+    checked("agree").map(a=>"✔ "+a).join("\n")
+  ].filter(l=>l!==null);
+  $("out").textContent = lines.join("\n");
+  $("outBox").hidden = false;
+  $("copyMsg").textContent = "複製後貼到私訊或委託留言即可。";
+  $("outBox").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+});
+
+$("copy").onclick = () => {
+  const txt = $("out").textContent;
+  const fallback = () => { const r=document.createRange(); r.selectNodeContents($("out")); const s=getSelection(); s.removeAllRanges(); s.addRange(r);
+    $("copyMsg").textContent = "已選取全部文字，請長按或 Ctrl+C 複製。"; };
+  try { navigator.clipboard.writeText(txt).then(()=>{$("copyMsg").textContent="已複製！貼給我就完成了。";}, fallback); }
+  catch(e){ fallback(); }
+};
+</script>
+
+</body></html>
